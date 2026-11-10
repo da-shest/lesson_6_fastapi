@@ -1,34 +1,33 @@
 class OrderRepository:
     def __init__(self):
-        self._orders = []
+        self._orders: list[dict] = []
+        self._next_id = 1
 
     def get_all(self) -> list[dict]:
         return self._orders
 
-    def _get_order_idx(self, order_id: int) -> int | None:
-        for idx, order in enumerate(self._orders):
-            if order['id'] == order_id:
-                return idx
-
     def get_by_id(self, order_id: int) -> dict | None:
-        idx = self._get_order_idx(order_id)
-        if idx is not None:
-            return self._orders[idx]
+        for order in self._orders:
+            if order["id"] == order_id:
+                return order
+        return None
 
     def add(self, order: dict) -> dict:
-        order["id"] = len(self._orders) + 1
-        self._orders.append(order)
+        new_order = dict(order)
+        new_order["id"] = self._next_id
+        self._next_id += 1
+        self._orders.append(new_order)
+        return new_order
+
+    def update(self, order_id: int, update_data: dict) -> dict | None:
+        order = self.get_by_id(order_id)
+        if order is None:
+            return None
+        order.update(update_data)
         return order
 
     def delete(self, order_id: int) -> dict | None:
-        idx = self._get_order_idx(order_id)
-        if idx is not None:
-            self._orders.pop(idx)
-            return {}
-
-    def update(self, order_id, update_data) -> dict | None:
-        idx = self._get_order_idx(order_id)
-        if idx is not None:
-            self._orders[idx] = update_data
-            return {}
-    
+        for idx, order in enumerate(self._orders):
+            if order["id"] == order_id:
+                return self._orders.pop(idx)
+        return None
